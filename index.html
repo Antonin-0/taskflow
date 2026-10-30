@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!--
+    Section des tâches.
+    Au sprint 2, une section de connexion sera ajoutée au-dessus,
+    et celle-ci ne s'affichera qu'une fois l'utilisateur connecté.
+  -->
+  <main id="ecran-taches" class="carte">
+    <h1>TaskFlow</h1>
+
+    <!-- Formulaire d'ajout d'une tâche (US3) -->
+    <!-- novalidate : c'est notre JavaScript qui vérifie la saisie et affiche les messages -->
+    <form id="formulaire-ajout" novalidate>
+      <div class="ligne-formulaire">
+        <label for="champ-titre" class="visuellement-cache">Titre de la tâche</label>
+        <input type="text" id="champ-titre" placeholder="Titre de la tâche…" maxlength="100" autocomplete="off">
+
+        <label for="champ-priorite" class="visuellement-cache">Priorité</label>
+        <select id="champ-priorite">
+          <option value="basse">Basse</option>
+          <option value="moyenne" selected>Moyenne</option>
+          <option value="haute">Haute</option>
+        </select>
+
+        <label for="champ-echeance" class="visuellement-cache">Échéance</label>
+        <input type="date" id="champ-echeance">
+
+        <button type="submit" class="bouton-principal">Ajouter</button>
+      </div>
+
+      <label for="champ-description" class="visuellement-cache">Description</label>
+      <input type="text" id="champ-description" placeholder="Description (facultative)" maxlength="500" autocomplete="off">
+
+      <!-- Zone où s'affichent les messages d'erreur de saisie -->
+      <p id="message-erreur" class="message-erreur" role="alert"></p>
+    </form>
+
+    <!-- Filtres par statut (US4) -->
+    <div class="filtres" role="group" aria-label="Filtrer les tâches">
+      <button type="button" class="filtre actif" data-filtre="toutes" aria-pressed="true">Toutes</button>
+      <button type="button" class="filtre" data-filtre="a_faire" aria-pressed="false">À faire</button>
+      <button type="button" class="filtre" data-filtre="terminee" aria-pressed="false">Terminées</button>
+    </div>
+
+    <!-- La liste est remplie par app.js -->
+    <ul id="liste-taches" class="liste-taches"></ul>
+    <p id="liste-vide" class="liste-vide">Aucune tâche pour le moment.</p>
+  </main>
+
+  <!-- Le script est chargé en bas de page, une fois tous les éléments HTML créés -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -135,4 +135,10 @@ Valeurs autorisées précisées pour chaque champ (par exemple : titre de 1 à 1
 
 **Vérification :** 22 tests automatiques passés (ajout, titre vide refusé, titre de plus de 100 caractères refusé, date invalide refusée, titre contenant du HTML affiché en texte, coche, filtres, suppression annulée et confirmée, rechargement, localStorage abîmé).
 
-**Gardé / modifié / rejeté :** à compléter après mon test dans le navigateur.
+**Test dans un navigateur :** réalisé par Claude à ma demande, dans Chromium. Titre vide refusé avec le message « Le titre est obligatoire. » ; 4 tâches ajoutées avec les bonnes couleurs et dates ; tâche cochée barrée ; `<b>test</b>` affiché tel quel ; tâches toujours présentes après rechargement ; filtre « Terminées » correct ; suppression confirmée ; affichage correct sur un écran de téléphone ; aucune erreur JavaScript. Le rendu correspond à la maquette du support de cours (slide 5).
+
+**Gardé :** l'ensemble du code, sans modification.
+
+**Modifié / rejeté :** rien.
+
+**Pourquoi :** les 5 user stories du sprint (US3, US4, US6, US7, US8) sont couvertes et vérifiées, et les exigences de sécurité prévues pour ce sprint sont respectées (aucun `innerHTML`, saisies vérifiées, lecture du localStorage protégée).

@@ -1,0 +1,261 @@
+/* =============================================================
+   TaskFlow · style.css · Sprint 1
+   ============================================================= */
+
+/* Couleurs utilisées dans toute l'application, regroupées ici
+   pour pouvoir les changer à un seul endroit */
+:root {
+  --fond: #eef4f3;
+  --carte: #ffffff;
+  --texte: #1f2a30;
+  --texte-doux: #5f6b72;
+  --accent: #1f9e90;
+  --accent-fonce: #143838;
+  --ligne: #edf4f2;
+  --bordure: #c9d4d2;
+  --erreur: #b3261e;
+
+  /* Couleurs des priorités (README, US4) : haute = rouge, moyenne = orange, basse = vert.
+     Assez foncées pour que le texte blanc reste lisible. */
+  --haute: #c0392b;
+  --moyenne: #b9550f;
+  --basse: #1e8a5f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 32px 16px;
+  background: var(--fond);
+  color: var(--texte);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+/* Bloc blanc central */
+.carte {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px;
+  background: var(--carte);
+  border: 1px solid var(--bordure);
+  border-radius: 12px;
+}
+
+h1 {
+  margin: 0 0 20px;
+  color: var(--accent);
+  font-size: 2rem;
+}
+
+/* ----- Formulaire d'ajout ----- */
+
+.ligne-formulaire {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+input[type="text"],
+input[type="date"],
+select {
+  padding: 10px 12px;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--texte);
+  font: inherit;
+}
+
+#champ-titre {
+  flex: 1 1 220px;
+}
+
+#champ-description {
+  width: 100%;
+}
+
+input:focus,
+select:focus,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.bouton-principal {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.bouton-principal:hover {
+  background: #17857a;
+}
+
+.message-erreur {
+  min-height: 1.4em;
+  margin: 8px 0 0;
+  color: var(--erreur);
+  font-size: 0.9rem;
+}
+
+/* ----- Filtres ----- */
+
+.filtres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 18px;
+}
+
+.filtre {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 999px;
+  background: var(--ligne);
+  color: var(--texte);
+}
+
+.filtre.actif {
+  background: var(--accent-fonce);
+  color: #fff;
+}
+
+/* ----- Liste des tâches ----- */
+
+.liste-taches {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tache {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  background: var(--ligne);
+  border-radius: 8px;
+}
+
+.tache input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Bloc titre + description : prend toute la place disponible */
+.textes {
+  flex: 1;
+  min-width: 0;
+}
+
+.titre {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.description {
+  display: block;
+  margin-top: 2px;
+  color: var(--texte-doux);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+/* Tâche terminée : texte barré et grisé (US6) */
+.tache.terminee .titre,
+.tache.terminee .description {
+  text-decoration: line-through;
+  color: var(--texte-doux);
+}
+
+/* Pastille de priorité */
+.badge {
+  flex-shrink: 0;
+  min-width: 84px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.badge-haute { background: var(--haute); }
+.badge-moyenne { background: var(--moyenne); }
+.badge-basse { background: var(--basse); }
+
+.echeance {
+  flex-shrink: 0;
+  width: 48px;
+  color: var(--texte-doux);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.bouton-supprimer {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 1.1rem;
+}
+
+.bouton-supprimer:hover {
+  background: #dfe9e7;
+}
+
+.liste-vide {
+  margin: 16px 0 0;
+  color: var(--texte-doux);
+  text-align: center;
+}
+
+/* Cache un élément à l'écran tout en le laissant lisible
+   par les lecteurs d'écran (utilisé pour les libellés des champs) */
+.visuellement-cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ----- Petits écrans (téléphone) ----- */
+
+@media (max-width: 560px) {
+  body {
+    padding: 16px;
+  }
+
+  .carte {
+    padding: 18px;
+  }
+
+  .tache {
+    flex-wrap: wrap;
+  }
+
+  .textes {
+    flex-basis: calc(100% - 40px);
+  }
+}

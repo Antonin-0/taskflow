@@ -167,3 +167,24 @@ Valeurs autorisées précisées pour chaque champ (par exemple : titre de 1 à 1
 
 **Pourquoi :** les exigences de sécurité de la section 1.4 du README prévues pour ce sprint sont toutes respectées et vérifiées. Le champ de confirmation n'était pas demandé, mais il répond à une limite déjà documentée (aucune récupération possible du mot de passe). Le fait que les trois écrans soient cachés par défaut est le choix le plus important : si le script plante, aucune tâche ne s'affiche.
 
+---
+
+## Prompt 8 · Sprint 3 : modification, revalidation, blocage (Claude)
+
+**Prompt :**
+> Réalise le sprint 3 de TaskFlow (même conversation) : ajoute la modification d'une tâche avec un bouton « Annuler » (US5), en appliquant les mêmes règles qu'à la création ; la revalidation au chargement de chaque tâche relue depuis localStorage, en ignorant celles qui ne respectent pas les valeurs autorisées de la section 3.2 du README ; et le blocage de la connexion pendant 5 minutes après 3 échecs consécutifs, avec le temps restant affiché et le compteur remis à zéro après une connexion réussie (US9). Garde textContent partout et le message d'erreur de connexion unique. Pas de bibliothèque. Commente le code en français pour un débutant.
+
+**Résultat :** modifications de `app.js`, `auth.js` et `style.css`. Choix signalés par l'IA :
+- **modification (US5)** : un bouton ✏️ remplace la tâche par un petit formulaire pré-rempli (une seule tâche modifiable à la fois), avec « Enregistrer » et « Annuler » ; la touche Échap annule aussi. Les vérifications sont exactement celles de la création (même fonction `verifierSaisie`) ; l'id et le statut ne changent pas ;
+- **revalidation** : chaque tâche relue est revérifiée (id entier positif, titre, description, priorité, date réelle, statut). Les tâches invalides et les id en double sont ignorés, un message indique combien, et la liste propre est réenregistrée. Chaque tâche gardée est **reconstruite avec seulement les 6 champs du modèle** : un champ ajouté à la main (par exemple `"role": "admin"`) disparaît ;
+- **blocage (US9)** : au 3e échec consécutif (identifiant ou mot de passe faux, sans distinction), la connexion est bloquée 5 minutes, avec un compte à rebours mis à jour chaque seconde et le bouton « Se connecter » désactivé. Pendant le blocage, le mot de passe n'est même pas vérifié. Le blocage survit à un rechargement de la page ;
+- **résistance à la modification à la main** : le temps restant est plafonné à 5 minutes (une date de fin repoussée à 10 jours ne bloque pas le compte indéfiniment), et des champs de blocage abîmés sont remis à des valeurs valides au lieu de faire planter la connexion. Les deux premiers échecs gardent le message unique « Identifiant ou mot de passe incorrect. ».
+
+**Test dans un navigateur (Chromium) :** 37 tests automatiques passés pour ce sprint, dont : titre vide, titre trop long et date inexistante refusés à la modification, Annuler et Échap sans effet sur les données, tâche terminée qui reste terminée, titre contenant du HTML affiché en texte, 12 tâches piégées sur 14 ignorées au chargement (priorité inventée, statut inventé, date du 31 février, id en double, etc.), champs en trop supprimés, blocage au 3e échec et pas avant, bon mot de passe refusé pendant le blocage, compte à rebours correct après avoir avancé l'horloge de 2 puis 5 minutes, déblocage et remise à zéro du compteur, aucune erreur JavaScript. Les 38 tests du sprint 2 passent toujours. Un défaut a été trouvé et corrigé pendant les tests : la touche Échap ne fonctionnait pas toujours, car le curseur n'était pas placé dans le formulaire de modification.
+
+**Gardé :** l'ensemble du code, y compris la touche Échap et le plafonnement du blocage à 5 minutes, ajoutés aux critères de US5 et US9 dans le README.
+
+**Modifié / rejeté :** rien.
+
+**Pourquoi :** les trois demandes du sprint sont couvertes et vérifiées. La revalidation est la parade au risque « données modifiables avec F12 » relevé au prompt 3 : l'application ne fait plus confiance à ce qu'elle relit. Le blocage reste contournable par quelqu'un qui modifie le localStorage, comme indiqué dans la section 4 du README, mais il ralentit bien un essai de mots de passe à la main.
+

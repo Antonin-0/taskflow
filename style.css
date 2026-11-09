@@ -1,5 +1,5 @@
 /* =============================================================
-   TaskFlow · style.css · Sprints 1 et 2
+   TaskFlow · style.css · Sprints 1, 2 et 3
    ============================================================= */
 
 /* Un élément avec l'attribut hidden reste toujours caché,
@@ -135,7 +135,8 @@ h1 {
 }
 
 /* Bouton désactivé (« Créer mon compte » tant que la jauge n'est pas sur « fort ») */
-.bouton-principal:disabled {
+.bouton-principal:disabled,
+.bouton-principal:disabled:hover {
   background: #9fb8b4;
   cursor: not-allowed;
 }
@@ -354,7 +355,8 @@ button {
   text-align: center;
 }
 
-.bouton-supprimer {
+/* Boutons ✏️ (modifier) et 🗑️ (supprimer) */
+.bouton-icone {
   flex-shrink: 0;
   padding: 4px 8px;
   border: none;
@@ -363,8 +365,31 @@ button {
   font-size: 1.1rem;
 }
 
-.bouton-supprimer:hover {
+.bouton-icone:hover {
   background: #dfe9e7;
+}
+
+/* ----- Modification d'une tâche (sprint 3) ----- */
+
+.tache.en-edition {
+  display: block;
+  background: #fff;
+  border: 2px solid var(--accent);
+}
+
+.formulaire-modification input[type="text"]:first-child {
+  flex: 1 1 220px;
+}
+
+.formulaire-modification > input[type="text"] {
+  width: 100%;
+}
+
+.boutons-modification {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .liste-vide {

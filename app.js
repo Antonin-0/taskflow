@@ -1,5 +1,5 @@
 // =============================================================
-// TaskFlow · app.js · Sprints 1 et 2
+// TaskFlow · app.js · Sprints 1, 2 et 3
 // Gestion des tâches : ajout, affichage, filtres, coche,
 // suppression et sauvegarde dans le navigateur (localStorage).
 //
@@ -19,6 +19,7 @@ const CLE_TACHES = "taskflow_taches";
 
 // Valeurs autorisées pour une tâche
 const PRIORITES = ["basse", "moyenne", "haute"];
+const STATUTS = ["a_faire", "terminee"];
 const TITRE_MAX = 100;
 const DESCRIPTION_MAX = 500;
 
@@ -52,28 +53,89 @@ let taches = [];
 // Le filtre choisi : "toutes", "a_faire" ou "terminee"
 let filtreActif = "toutes";
 
+// Identifiant de la tâche en cours de modification, ou null (sprint 3)
+let idEnEdition = null;
+
 
 // =============================================================
 // Sauvegarde dans le navigateur (US8)
 // =============================================================
 
-// Relit les tâches enregistrées. Renvoie une liste vide s'il n'y a rien.
+// Revalidation d'une tâche relue depuis localStorage (sprint 3, README section 1.4).
+// localStorage peut être modifié à la main avec F12 : on ne fait donc jamais
+// confiance à ce qu'on y relit. Chaque tâche est revérifiée avec les valeurs
+// autorisées de la section 3.2. Renvoie une tâche propre, ou null si elle est invalide.
+function nettoyerTache(donnee) {
+  // Doit être un objet (pas null, pas un tableau, pas un simple texte)
+  if (typeof donnee !== "object" || donnee === null || Array.isArray(donnee)) {
+    return null;
+  }
+  // id : nombre entier positif (créé avec Date.now())
+  if (!Number.isInteger(donnee.id) || donnee.id <= 0) {
+    return null;
+  }
+  // titre et description : du texte (la description peut être absente)
+  const description = donnee.description === undefined ? "" : donnee.description;
+  if (typeof donnee.titre !== "string" || typeof description !== "string") {
+    return null;
+  }
+  // échéance : null ou un texte (sa validité est vérifiée juste après)
+  const echeance = donnee.echeance === undefined ? null : donnee.echeance;
+  if (echeance !== null && typeof echeance !== "string") {
+    return null;
+  }
+  // Mêmes règles qu'à la saisie : titre, description, priorité, date
+  const titre = donnee.titre.trim();
+  if (verifierSaisie(titre, description.trim(), donnee.priorite, echeance) !== "") {
+    return null;
+  }
+  // statut : "a_faire" ou "terminee" uniquement
+  if (!STATUTS.includes(donnee.statut)) {
+    return null;
+  }
+
+  // On reconstruit un objet neuf avec seulement les 6 champs du modèle :
+  // tout champ en trop, ajouté à la main, est ainsi abandonné
+  return {
+    id: donnee.id,
+    titre: titre,
+    description: description.trim(),
+    priorite: donnee.priorite,
+    echeance: echeance,
+    statut: donnee.statut
+  };
+}
+
+// Relit les tâches enregistrées et ne garde que les tâches valides.
+// Renvoie { taches: [...], ignorees: nombre de tâches écartées }.
 function chargerTaches() {
   const texte = localStorage.getItem(CLE_TACHES);
   if (texte === null) {
-    return [];
+    return { taches: [], ignorees: 0 };
   }
 
-  // JSON.parse provoque une erreur si le contenu a été abîmé
-  // (par exemple modifié à la main avec F12). Le try/catch évite
-  // que toute l'application s'arrête : on repart alors d'une liste vide.
-  // La vérification complète de chaque tâche relue est prévue au sprint 3.
+  // JSON.parse provoque une erreur si le contenu a été abîmé.
+  // Le try/catch évite que toute l'application s'arrête.
+  let donnees;
   try {
-    const donnees = JSON.parse(texte);
-    return Array.isArray(donnees) ? donnees : [];
+    donnees = JSON.parse(texte);
   } catch (erreur) {
-    return [];
+    return { taches: [], ignorees: 1 };
   }
+  if (!Array.isArray(donnees)) {
+    return { taches: [], ignorees: 1 };
+  }
+
+  const valides = [];
+  const idsVus = new Set();       // pour repérer deux tâches avec le même id
+  for (const donnee of donnees) {
+    const tache = nettoyerTache(donnee);
+    if (tache !== null && !idsVus.has(tache.id)) {
+      valides.push(tache);
+      idsVus.add(tache.id);
+    }
+  }
+  return { taches: valides, ignorees: donnees.length - valides.length };
 }
 
 // Enregistre toutes les tâches. Appelée après chaque changement.
@@ -201,8 +263,133 @@ function supprimerTache(id) {
     return;
   }
   taches = taches.filter(function (t) { return t.id !== id; });
+  if (idEnEdition === id) {
+    idEnEdition = null;
+  }
   sauvegarderTaches();
   afficherTaches();
+}
+
+
+// =============================================================
+// Modification d'une tâche (US5, sprint 3)
+// =============================================================
+
+// Passe une tâche en mode modification (une seule à la fois)
+function commencerModification(id) {
+  idEnEdition = id;
+  afficherTaches();
+  // Place le curseur dans le titre : on peut taper tout de suite,
+  // et la touche Échap fonctionne immédiatement
+  const champ = liste.querySelector(".formulaire-modification input");
+  if (champ) {
+    champ.focus();
+  }
+}
+
+// Abandonne la modification sans rien enregistrer
+function annulerModification() {
+  idEnEdition = null;
+  afficherTaches();
+}
+
+// Construit le petit formulaire qui remplace la tâche pendant sa modification.
+// Les valeurs actuelles sont placées dans les champs avec .value,
+// qui ne les interprète jamais comme du HTML.
+function creerFormulaireModification(tache) {
+  const element = document.createElement("li");
+  element.className = "tache en-edition";
+
+  const form = document.createElement("form");
+  form.className = "formulaire-modification";
+  form.noValidate = true;
+
+  const titre = document.createElement("input");
+  titre.type = "text";
+  titre.maxLength = TITRE_MAX;
+  titre.value = tache.titre;
+  titre.setAttribute("aria-label", "Titre");
+
+  const priorite = document.createElement("select");
+  priorite.setAttribute("aria-label", "Priorité");
+  for (const valeur of PRIORITES) {
+    const option = document.createElement("option");
+    option.value = valeur;
+    option.textContent = LIBELLES_PRIORITE[valeur];
+    priorite.appendChild(option);
+  }
+  priorite.value = tache.priorite;
+
+  const echeance = document.createElement("input");
+  echeance.type = "date";
+  echeance.value = tache.echeance || "";
+  echeance.setAttribute("aria-label", "Échéance");
+
+  const description = document.createElement("input");
+  description.type = "text";
+  description.maxLength = DESCRIPTION_MAX;
+  description.value = tache.description;
+  description.placeholder = "Description (facultative)";
+  description.setAttribute("aria-label", "Description");
+
+  const boutonEnregistrer = document.createElement("button");
+  boutonEnregistrer.type = "submit";
+  boutonEnregistrer.className = "bouton-principal";
+  boutonEnregistrer.textContent = "Enregistrer";
+
+  const boutonAnnuler = document.createElement("button");
+  boutonAnnuler.type = "button";
+  boutonAnnuler.className = "bouton-secondaire";
+  boutonAnnuler.textContent = "Annuler";
+  boutonAnnuler.addEventListener("click", annulerModification);
+
+  const message = document.createElement("p");
+  message.className = "message-erreur";
+  message.setAttribute("role", "alert");
+
+  // Enregistrement : exactement les mêmes vérifications qu'à la création
+  form.addEventListener("submit", function (evenement) {
+    evenement.preventDefault();
+    const nouveauTitre = titre.value.trim();
+    const nouvelleDescription = description.value.trim();
+    const nouvelleEcheance = echeance.value === "" ? null : echeance.value;
+
+    const erreur = verifierSaisie(nouveauTitre, nouvelleDescription, priorite.value, nouvelleEcheance);
+    if (erreur !== "") {
+      message.textContent = erreur;
+      titre.focus();
+      return;
+    }
+
+    // Le statut (à faire / terminée) et l'id ne changent pas
+    tache.titre = nouveauTitre;
+    tache.description = nouvelleDescription;
+    tache.priorite = priorite.value;
+    tache.echeance = nouvelleEcheance;
+
+    idEnEdition = null;
+    sauvegarderTaches();
+    afficherTaches();
+  });
+
+  // La touche Échap annule aussi la modification
+  form.addEventListener("keydown", function (evenement) {
+    if (evenement.key === "Escape") {
+      annulerModification();
+    }
+  });
+
+  const ligne = document.createElement("div");
+  ligne.className = "ligne-formulaire";
+  ligne.append(titre, priorite, echeance);
+
+  const boutons = document.createElement("div");
+  boutons.className = "boutons-modification";
+  boutons.append(boutonAnnuler, boutonEnregistrer);
+
+  form.append(ligne, description, message, boutons);
+  element.appendChild(form);
+  return element;
 }
 
 
@@ -222,6 +409,11 @@ function formaterDate(echeance) {
 // Construit l'élément HTML d'une tâche, morceau par morceau,
 // avec createElement et textContent (aucun innerHTML)
 function creerElementTache(tache) {
+  // La tâche en cours de modification est remplacée par son formulaire
+  if (tache.id === idEnEdition) {
+    return creerFormulaireModification(tache);
+  }
+
   const element = document.createElement("li");
   element.className = "tache";
   if (tache.statut === "terminee") {
@@ -263,17 +455,27 @@ function creerElementTache(tache) {
   echeance.className = "echeance";
   echeance.textContent = formaterDate(tache.echeance);
 
+  // Bouton de modification (sprint 3)
+  const boutonModifier = document.createElement("button");
+  boutonModifier.type = "button";
+  boutonModifier.className = "bouton-icone";
+  boutonModifier.textContent = "✏️";
+  boutonModifier.setAttribute("aria-label", "Modifier « " + tache.titre + " »");
+  boutonModifier.addEventListener("click", function () {
+    commencerModification(tache.id);
+  });
+
   // Bouton de suppression
   const boutonSupprimer = document.createElement("button");
   boutonSupprimer.type = "button";
-  boutonSupprimer.className = "bouton-supprimer";
+  boutonSupprimer.className = "bouton-icone";
   boutonSupprimer.textContent = "🗑️";
   boutonSupprimer.setAttribute("aria-label", "Supprimer « " + tache.titre + " »");
   boutonSupprimer.addEventListener("click", function () {
     supprimerTache(tache.id);
   });
 
-  element.append(coche, textes, badge, echeance, boutonSupprimer);
+  element.append(coche, textes, badge, echeance, boutonModifier, boutonSupprimer);
   return element;
 }
 
@@ -328,11 +530,23 @@ boutonsFiltre.forEach(function (bouton) {
 // Fonctions appelées par auth.js (sprint 2)
 // =============================================================
 
-// Après la connexion : relit les tâches enregistrées et les affiche
+// Après la connexion : relit les tâches enregistrées, les revalide et les affiche
 function ouvrirTaches() {
-  taches = chargerTaches();
+  const resultat = chargerTaches();
+  taches = resultat.taches;
+  idEnEdition = null;
   activerFiltre("toutes");
-  afficherErreur("");
+
+  if (resultat.ignorees > 0) {
+    // On réenregistre la liste propre, et on prévient l'utilisateur
+    sauvegarderTaches();
+    afficherErreur(resultat.ignorees === 1
+      ? "1 tâche invalide a été ignorée au chargement."
+      : resultat.ignorees + " tâches invalides ont été ignorées au chargement.");
+  } else {
+    afficherErreur("");
+  }
+
   afficherTaches();
   champTitre.focus();
 }
@@ -342,6 +556,7 @@ function ouvrirTaches() {
 // Elles restent bien sûr enregistrées dans localStorage.
 function fermerTaches() {
   taches = [];
+  idEnEdition = null;
   liste.replaceChildren();
   formulaire.reset();
   afficherErreur("");

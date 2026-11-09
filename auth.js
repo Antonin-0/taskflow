@@ -1,8 +1,8 @@
 // =============================================================
-// TaskFlow · auth.js · Sprint 2
+// TaskFlow · auth.js · Sprints 2 et 3
 // Tout ce qui touche à la sécurité de l'accès (README, sections 1.3 et 1.4) :
 // création du compte, jauge de robustesse, hachage du mot de passe,
-// connexion et déconnexion.
+// connexion, déconnexion et blocage après 3 échecs (sprint 3).
 //
 // Ce fichier est chargé AVANT app.js. C'est lui qui décide quel écran
 // afficher : les tâches ne sont montrées que si la session est ouverte.
@@ -21,6 +21,10 @@ const CLE_SESSION = "taskflow_session";
 
 const IDENTIFIANT_MIN = 3;
 const IDENTIFIANT_MAX = 30;
+
+// Blocage après 3 échecs consécutifs, pendant 5 minutes (US9)
+const MAX_ECHECS = 3;
+const DUREE_BLOCAGE = 5 * 60 * 1000;   // 5 minutes en millisecondes
 
 // Message unique en cas d'échec de connexion : on ne dit jamais si c'est
 // l'identifiant ou le mot de passe qui est faux, pour ne pas aider
@@ -184,15 +188,124 @@ function lireUtilisateur() {
   if (texte === null) {
     return null;
   }
+  let utilisateur;
   try {
-    const utilisateur = JSON.parse(texte);
-    const valide = utilisateur !== null
-      && typeof utilisateur.identifiant === "string"
-      && /^[0-9a-f]{64}$/.test(utilisateur.motDePasseHash)
-      && /^[0-9a-f]{32}$/.test(utilisateur.sel);
-    return valide ? utilisateur : null;
+    utilisateur = JSON.parse(texte);
   } catch (erreur) {
     return null;
+  }
+
+  // Revalidation (README, section 3.3) : sans identifiant, empreinte
+  // et sel corrects, le compte est inutilisable
+  const valide = typeof utilisateur === "object" && utilisateur !== null
+    && typeof utilisateur.identifiant === "string"
+    && utilisateur.identifiant.length >= IDENTIFIANT_MIN
+    && utilisateur.identifiant.length <= IDENTIFIANT_MAX
+    && /^[0-9a-f]{64}$/.test(utilisateur.motDePasseHash)
+    && /^[0-9a-f]{32}$/.test(utilisateur.sel);
+  if (!valide) {
+    return null;
+  }
+
+  // Les deux champs du blocage sont remis à des valeurs autorisées
+  // s'ils ont été abîmés (entier de 0 à 3, et nombre ou null)
+  if (!Number.isInteger(utilisateur.tentativesEchouees)
+    || utilisateur.tentativesEchouees < 0
+    || utilisateur.tentativesEchouees > MAX_ECHECS) {
+    utilisateur.tentativesEchouees = 0;
+  }
+  if (typeof utilisateur.bloqueJusqua !== "number" || !Number.isFinite(utilisateur.bloqueJusqua)) {
+    utilisateur.bloqueJusqua = null;
+  }
+  return utilisateur;
+}
+
+// Enregistre le compte (après création, échec ou réussite de connexion)
+function enregistrerUtilisateur(utilisateur) {
+  localStorage.setItem(CLE_UTILISATEUR, JSON.stringify(utilisateur));
+}
+
+
+// =============================================================
+// Blocage après 3 échecs (US9, sprint 3)
+// =============================================================
+
+// Identifiant du minuteur qui met à jour le compte à rebours chaque seconde
+let minuteurBlocage = null;
+
+// Temps de blocage restant en millisecondes (0 si la connexion est possible).
+// Le temps est plafonné à 5 minutes : une date de fin repoussée à la main
+// très loin dans le futur ne peut pas bloquer le compte indéfiniment.
+function tempsRestantBlocage(utilisateur) {
+  if (utilisateur.bloqueJusqua === null) {
+    return 0;
+  }
+  const reste = utilisateur.bloqueJusqua - Date.now();
+  return reste > 0 ? Math.min(reste, DUREE_BLOCAGE) : 0;
+}
+
+// Transforme une durée en texte, par exemple 272000 ms → "4 min 32 s"
+function formaterDuree(millisecondes) {
+  const secondes = Math.ceil(millisecondes / 1000);
+  const minutes = Math.floor(secondes / 60);
+  const reste = secondes % 60;
+  return minutes + " min " + String(reste).padStart(2, "0") + " s";
+}
+
+// Remet le compteur d'échecs à zéro et lève le blocage
+function leverBlocage(utilisateur) {
+  utilisateur.tentativesEchouees = 0;
+  utilisateur.bloqueJusqua = null;
+  enregistrerUtilisateur(utilisateur);
+}
+
+function arreterCompteARebours() {
+  if (minuteurBlocage !== null) {
+    clearInterval(minuteurBlocage);
+    minuteurBlocage = null;
+  }
+}
+
+// Affiche le temps restant et le met à jour chaque seconde.
+// Pendant le blocage, le bouton « Se connecter » est désactivé.
+function lancerCompteARebours() {
+  arreterCompteARebours();
+
+  function miseAJour() {
+    const utilisateur = lireUtilisateur();
+    if (utilisateur === null) {
+      arreterCompteARebours();
+      return;
+    }
+    const reste = tempsRestantBlocage(utilisateur);
+    if (reste <= 0) {
+      // Fin du blocage : on peut réessayer
+      leverBlocage(utilisateur);
+      arreterCompteARebours();
+      boutonConnexion.disabled = false;
+      messageConnexion.textContent = "Vous pouvez de nouveau vous connecter.";
+      return;
+    }
+    boutonConnexion.disabled = true;
+    messageConnexion.textContent = "Trop de tentatives échouées. Réessayez dans "
+      + formaterDuree(reste) + ".";
+  }
+
+  miseAJour();
+  minuteurBlocage = setInterval(miseAJour, 1000);
+}
+
+// À l'affichage de l'écran de connexion : reprend le compte à rebours
+// si un blocage est en cours (même après un rechargement de la page)
+function verifierBlocage() {
+  const utilisateur = lireUtilisateur();
+  if (utilisateur === null) {
+    return;
+  }
+  if (tempsRestantBlocage(utilisateur) > 0) {
+    lancerCompteARebours();
+  } else if (utilisateur.bloqueJusqua !== null) {
+    leverBlocage(utilisateur);    // blocage terminé pendant que la page était fermée
   }
 }
 
@@ -208,11 +321,16 @@ function afficherEcran(nom) {
   ecranTaches.hidden = nom !== "taches";
   zoneUtilisateur.hidden = nom !== "taches";
 
+  // Le compte à rebours ne tourne que sur l'écran de connexion
+  arreterCompteARebours();
+  boutonConnexion.disabled = false;
+
   // Place le curseur dans le premier champ de l'écran affiché
   if (nom === "creation") {
     creationIdentifiant.focus();
   } else if (nom === "connexion") {
     connexionIdentifiant.focus();
+    verifierBlocage();
   }
 }
 
@@ -278,7 +396,7 @@ formulaireCreation.addEventListener("submit", async function (evenement) {
   // (README, section 1.4, risque n° 4 du prompt 3)
   effacerTaches();         // fonction définie dans app.js
 
-  localStorage.setItem(CLE_UTILISATEUR, JSON.stringify(utilisateur));
+  enregistrerUtilisateur(utilisateur);
 
   // Efface les mots de passe des champs avant de quitter l'écran
   formulaireCreation.reset();
@@ -307,6 +425,18 @@ formulaireConnexion.addEventListener("submit", async function (evenement) {
     return;
   }
 
+  // Blocage en cours : on ne vérifie même pas le mot de passe (US9)
+  if (tempsRestantBlocage(utilisateur) > 0) {
+    connexionMdp.value = "";
+    lancerCompteARebours();
+    return;
+  }
+  // Blocage terminé : on repart de zéro
+  if (utilisateur.bloqueJusqua !== null) {
+    utilisateur.tentativesEchouees = 0;
+    utilisateur.bloqueJusqua = null;
+  }
+
   const identifiant = connexionIdentifiant.value.trim();
   const mdp = connexionMdp.value;
 
@@ -323,11 +453,25 @@ formulaireConnexion.addEventListener("submit", async function (evenement) {
   connexionMdp.value = "";
 
   if (!correct) {
+    // Un échec de plus (identifiant faux ou mot de passe faux, c'est pareil)
+    utilisateur.tentativesEchouees = utilisateur.tentativesEchouees + 1;
+
+    if (utilisateur.tentativesEchouees >= MAX_ECHECS) {
+      // 3e échec consécutif : connexion bloquée pendant 5 minutes
+      utilisateur.bloqueJusqua = Date.now() + DUREE_BLOCAGE;
+      enregistrerUtilisateur(utilisateur);
+      lancerCompteARebours();
+      return;
+    }
+
+    enregistrerUtilisateur(utilisateur);
     messageConnexion.textContent = MESSAGE_ECHEC_CONNEXION;
     connexionMdp.focus();
     return;
   }
 
+  // Connexion réussie : le compteur d'échecs repart de zéro
+  leverBlocage(utilisateur);
   formulaireConnexion.reset();
   ouvrirSession(utilisateur.identifiant);
 });

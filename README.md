@@ -113,7 +113,8 @@ Format : *En tant que… je veux… afin de…*, avec des critères d'acceptatio
 **En tant qu'** étudiant, **je veux** changer le titre, la priorité ou la date d'une tâche, **afin de** la corriger sans devoir la recréer.
 
 - Les mêmes règles qu'à la création s'appliquent (titre non vide, 100 caractères max).
-- Un bouton « Annuler » abandonne la modification.
+- Un bouton « Annuler » (ou la touche Échap) abandonne la modification.
+- L'identifiant et le statut (à faire / terminée) de la tâche ne changent pas.
 
 ### US6 · Terminer une tâche (indispensable)
 
@@ -141,6 +142,7 @@ Format : *En tant que… je veux… afin de…*, avec des critères d'acceptatio
 
 - Après 3 échecs consécutifs, la connexion est impossible pendant 5 minutes, avec le temps restant affiché.
 - Une connexion réussie remet le compteur à zéro.
+- Le blocage reste actif après un rechargement de la page, et le temps restant ne peut jamais dépasser 5 minutes, même si la date de fin a été modifiée à la main.
 
 ---
 

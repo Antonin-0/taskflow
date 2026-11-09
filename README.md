@@ -59,7 +59,7 @@ Le compte ne peut être créé qu'avec un mot de passe **fort**.
 
 - HTML, CSS et JavaScript, **sans framework** ni bibliothèque externe.
 - Sauvegarde dans le navigateur (`localStorage` et `sessionStorage`), **pas de serveur ni de base de données**.
-- Outils : VS Code, GitHub, Claude (séance 1), GitHub Copilot et/ou Cursor (séance 2).
+- Outils : VS Code, GitHub et Claude, pour le cadrage (séance 1) comme pour le développement (séance 2).
 
 ### 1.6 Hors périmètre
 
@@ -220,7 +220,7 @@ Sans serveur, toute la sécurité repose sur le navigateur. Je l'assume et le do
 
 - Quelqu'un qui ouvre les outils de développement (F12) peut lire les tâches dans `localStorage` et contourner l'écran de connexion. La connexion protège contre un regard rapide, pas contre un attaquant.
 - Le hash protège le mot de passe (il n'est pas lisible), mais pas les tâches, qui restent en clair.
-- Le blocage après 3 échecs peut être contourné en vidant le `localStorage`.
+- Le blocage après 3 échecs peut être contourné en remettant à zéro, avec F12, le compteur d'échecs enregistré dans le `localStorage`.
 - Aucune récupération n'est possible en cas d'oubli du mot de passe : la seule solution est une réinitialisation qui efface toutes les données.
 - SHA-256 est un hash rapide ; une vraie application utiliserait un algorithme lent conçu pour les mots de passe (bcrypt, Argon2), côté serveur.
 
@@ -240,4 +240,4 @@ Un commit par sprint.
 
 ## 6. Utilisation de l'IA
 
-Toutes les étapes de cadrage ont été réalisées avec Claude. Les prompts, ce qui a été gardé, modifié ou rejeté, et pourquoi, sont dans [PROMPTS.md](PROMPTS.md).
+Le cadrage (séance 1) et le développement des 3 sprints (séance 2) ont été réalisés avec Claude. Les prompts, ce qui a été gardé, modifié ou rejeté, et pourquoi, sont dans [PROMPTS.md](PROMPTS.md).

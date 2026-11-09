@@ -121,6 +121,8 @@ Valeurs autorisées précisées pour chaque champ (par exemple : titre de 1 à 1
 
 # Séance 2 · Développement
 
+Outil : Claude. Un prompt et un commit par sprint. Le développement a été fait avant que le découpage officiel des sprints soit communiqué : la correspondance entre les sprints réalisés et le plan officiel est dans la section 5 du README.
+
 ## Prompt 6 · Sprint 1 : tâches et sauvegarde (Claude)
 
 **Prompt :**

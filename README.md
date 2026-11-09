@@ -226,15 +226,25 @@ Sans serveur, toute la sécurité repose sur le navigateur. Je l'assume et le do
 
 ---
 
-## 5. Planning de la séance 2 (3 sprints)
+## 5. Séance 2 : les 3 sprints
 
-| Sprint | Contenu | User stories |
+Le développement a été fait avant que le découpage officiel des sprints soit communiqué. Les deux découpages couvrent exactement les mêmes fonctionnalités, mais dans un ordre différent.
+
+**Les sprints réalisés** (un commit et une entrée de PROMPTS.md par sprint) :
+
+| Sprint réalisé | Contenu | User stories | Prompt |
+|---|---|---|---|
+| 1 | Ajout, affichage, filtres, coche, suppression, sauvegarde (localStorage), mise en forme CSS | US3, US4, US6, US7, US8 | 6 |
+| 2 | Création de compte, robustesse du mot de passe, jauge, connexion, déconnexion | US1, US2 | 7 |
+| 3 | Modification d'une tâche, revalidation des données au chargement, blocage après 3 échecs | US5, US9 | 8 |
+
+**Correspondance avec le plan officiel de la séance 2 :**
+
+| Sprint officiel | Contenu demandé | Où c'est fait |
 |---|---|---|
-| 1 | Page, formulaire d'ajout, affichage et filtres, coche, suppression, sauvegarde | US3, US4, US6, US7, US8 |
-| 2 | Création de compte, jauge, connexion, déconnexion | US1, US2 |
-| 3 | Modification, revalidation des données au chargement, blocage bonus, finitions | US5, US9 |
-
-Un commit par sprint.
+| 1 · Fonctions de base | Créer, afficher, modifier, supprimer, terminer | Sprint 1 réalisé (créer, afficher, supprimer, terminer) et sprint 3 réalisé (modifier) |
+| 2 · Sauvegarde et CSS | localStorage, mise en forme CSS | Sprint 1 réalisé |
+| 3 · Fonctionnalité filière | Écran de connexion, robustesse du mot de passe | Sprint 2 réalisé (connexion, robustesse, jauge) et sprint 3 réalisé (blocage bonus, revalidation) |
 
 ---
 

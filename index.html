@@ -8,54 +8,127 @@
 </head>
 <body>
 
-  <!--
-    Section des tâches.
-    Au sprint 2, une section de connexion sera ajoutée au-dessus,
-    et celle-ci ne s'affichera qu'une fois l'utilisateur connecté.
-  -->
-  <main id="ecran-taches" class="carte">
-    <h1>TaskFlow</h1>
+  <main class="carte">
 
-    <!-- Formulaire d'ajout d'une tâche (US3) -->
-    <!-- novalidate : c'est notre JavaScript qui vérifie la saisie et affiche les messages -->
-    <form id="formulaire-ajout" novalidate>
-      <div class="ligne-formulaire">
-        <label for="champ-titre" class="visuellement-cache">Titre de la tâche</label>
-        <input type="text" id="champ-titre" placeholder="Titre de la tâche…" maxlength="100" autocomplete="off">
+    <!-- En-tête : le nom de l'utilisateur et le bouton de déconnexion
+         n'apparaissent qu'une fois connecté -->
+    <header class="entete">
+      <h1>TaskFlow</h1>
+      <div id="zone-utilisateur" class="zone-utilisateur" hidden>
+        <span class="connecte-en-tant-que">Connecté : <strong id="nom-utilisateur"></strong></span>
+        <button type="button" id="bouton-deconnexion" class="bouton-secondaire">Se déconnecter</button>
+      </div>
+    </header>
 
-        <label for="champ-priorite" class="visuellement-cache">Priorité</label>
-        <select id="champ-priorite">
-          <option value="basse">Basse</option>
-          <option value="moyenne" selected>Moyenne</option>
-          <option value="haute">Haute</option>
-        </select>
+    <!--
+      Les trois écrans ci-dessous sont tous cachés au départ (attribut hidden).
+      C'est auth.js qui décide lequel afficher :
+      - création du compte s'il n'existe pas encore,
+      - connexion si le compte existe mais que personne n'est connecté,
+      - tâches uniquement si la session est ouverte.
+    -->
 
-        <label for="champ-echeance" class="visuellement-cache">Échéance</label>
-        <input type="date" id="champ-echeance">
+    <!-- Écran 1 : création du compte au premier lancement (US2) -->
+    <section id="ecran-creation" class="ecran-auth" hidden>
+      <h2>Créer votre compte</h2>
+      <p class="texte-aide">Premier lancement : choisissez un identifiant et un mot de passe robuste.</p>
 
-        <button type="submit" class="bouton-principal">Ajouter</button>
+      <form id="formulaire-creation" novalidate>
+        <label for="creation-identifiant">Identifiant</label>
+        <input type="text" id="creation-identifiant" maxlength="30" autocomplete="username">
+
+        <label for="creation-mdp">Mot de passe</label>
+        <input type="password" id="creation-mdp" autocomplete="new-password" aria-describedby="jauge-texte liste-criteres">
+
+        <!-- Jauge de robustesse, mise à jour à chaque caractère tapé -->
+        <div class="jauge" aria-hidden="true">
+          <div id="jauge-barre" class="jauge-barre"></div>
+        </div>
+        <p id="jauge-texte" class="jauge-texte" aria-live="polite"></p>
+
+        <!-- Liste des 4 critères : ✓ si rempli, ✗ s'il manque -->
+        <ul id="liste-criteres" class="liste-criteres">
+          <li data-critere="longueur">Au moins 8 caractères</li>
+          <li data-critere="majuscule">Une majuscule</li>
+          <li data-critere="chiffre">Un chiffre</li>
+          <li data-critere="special">Un caractère spécial (ni lettre ni chiffre)</li>
+        </ul>
+
+        <label for="creation-confirmation">Confirmer le mot de passe</label>
+        <input type="password" id="creation-confirmation" autocomplete="new-password">
+
+        <button type="submit" id="bouton-creer" class="bouton-principal" disabled>Créer mon compte</button>
+        <p id="message-creation" class="message-erreur" role="alert"></p>
+      </form>
+    </section>
+
+    <!-- Écran 2 : connexion (US1) -->
+    <section id="ecran-connexion" class="ecran-auth" hidden>
+      <h2>Connexion</h2>
+
+      <form id="formulaire-connexion" novalidate>
+        <label for="connexion-identifiant">Identifiant</label>
+        <input type="text" id="connexion-identifiant" maxlength="30" autocomplete="username">
+
+        <label for="connexion-mdp">Mot de passe</label>
+        <input type="password" id="connexion-mdp" autocomplete="current-password">
+
+        <button type="submit" id="bouton-connexion" class="bouton-principal">Se connecter</button>
+        <p id="message-connexion" class="message-erreur" role="alert"></p>
+      </form>
+    </section>
+
+    <!-- Écran 3 : les tâches, visibles uniquement après connexion -->
+    <section id="ecran-taches" hidden>
+
+      <!-- Formulaire d'ajout d'une tâche (US3) -->
+      <!-- novalidate : c'est notre JavaScript qui vérifie la saisie et affiche les messages -->
+      <form id="formulaire-ajout" novalidate>
+        <div class="ligne-formulaire">
+          <label for="champ-titre" class="visuellement-cache">Titre de la tâche</label>
+          <input type="text" id="champ-titre" placeholder="Titre de la tâche…" maxlength="100" autocomplete="off">
+
+          <label for="champ-priorite" class="visuellement-cache">Priorité</label>
+          <select id="champ-priorite">
+            <option value="basse">Basse</option>
+            <option value="moyenne" selected>Moyenne</option>
+            <option value="haute">Haute</option>
+          </select>
+
+          <label for="champ-echeance" class="visuellement-cache">Échéance</label>
+          <input type="date" id="champ-echeance">
+
+          <button type="submit" class="bouton-principal">Ajouter</button>
+        </div>
+
+        <label for="champ-description" class="visuellement-cache">Description</label>
+        <input type="text" id="champ-description" placeholder="Description (facultative)" maxlength="500" autocomplete="off">
+
+        <!-- Zone où s'affichent les messages d'erreur de saisie -->
+        <p id="message-erreur" class="message-erreur" role="alert"></p>
+      </form>
+
+      <!-- Filtres par statut (US4) -->
+      <div class="filtres" role="group" aria-label="Filtrer les tâches">
+        <button type="button" class="filtre actif" data-filtre="toutes" aria-pressed="true">Toutes</button>
+        <button type="button" class="filtre" data-filtre="a_faire" aria-pressed="false">À faire</button>
+        <button type="button" class="filtre" data-filtre="terminee" aria-pressed="false">Terminées</button>
       </div>
 
-      <label for="champ-description" class="visuellement-cache">Description</label>
-      <input type="text" id="champ-description" placeholder="Description (facultative)" maxlength="500" autocomplete="off">
+      <!-- La liste est remplie par app.js -->
+      <ul id="liste-taches" class="liste-taches"></ul>
+      <p id="liste-vide" class="liste-vide">Aucune tâche pour le moment.</p>
+    </section>
 
-      <!-- Zone où s'affichent les messages d'erreur de saisie -->
-      <p id="message-erreur" class="message-erreur" role="alert"></p>
-    </form>
-
-    <!-- Filtres par statut (US4) -->
-    <div class="filtres" role="group" aria-label="Filtrer les tâches">
-      <button type="button" class="filtre actif" data-filtre="toutes" aria-pressed="true">Toutes</button>
-      <button type="button" class="filtre" data-filtre="a_faire" aria-pressed="false">À faire</button>
-      <button type="button" class="filtre" data-filtre="terminee" aria-pressed="false">Terminées</button>
-    </div>
-
-    <!-- La liste est remplie par app.js -->
-    <ul id="liste-taches" class="liste-taches"></ul>
-    <p id="liste-vide" class="liste-vide">Aucune tâche pour le moment.</p>
+    <!-- Message si JavaScript est désactivé -->
+    <noscript><p class="message-erreur">TaskFlow a besoin de JavaScript pour fonctionner.</p></noscript>
   </main>
 
-  <!-- Le script est chargé en bas de page, une fois tous les éléments HTML créés -->
+  <!--
+    Ordre de chargement (README, section 3.1) : auth.js puis app.js.
+    Les deux scripts sont en bas de page, une fois tous les éléments HTML créés.
+  -->
+  <script src="auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -142,3 +142,24 @@ Valeurs autorisées précisées pour chaque champ (par exemple : titre de 1 à 1
 **Modifié / rejeté :** rien.
 
 **Pourquoi :** les 5 user stories du sprint (US3, US4, US6, US7, US8) sont couvertes et vérifiées, et les exigences de sécurité prévues pour ce sprint sont respectées (aucun `innerHTML`, saisies vérifiées, lecture du localStorage protégée).
+
+---
+
+## Prompt 7 · Sprint 2 : création de compte, jauge, connexion (Claude)
+
+**Prompt :**
+> Réalise le sprint 2 de TaskFlow (même conversation) : crée auth.js et modifie index.html, style.css et app.js pour ajouter la création du compte au premier lancement, la jauge de robustesse en temps réel avec la liste des critères manquants, la connexion et la déconnexion (US1, US2). Respecte les exigences de sécurité de la section 1.4 du README : mot de passe haché en SHA-256 avec un sel via Web Crypto, session dans sessionStorage, message d'erreur qui ne précise pas quel champ est faux, tâches effacées à la création d'un compte. Les tâches ne doivent s'afficher qu'après connexion. Pas de bibliothèque. Commente le code en français pour un débutant.
+
+**Résultat :** un nouveau fichier `auth.js` et des modifications de `index.html`, `style.css` et `app.js`, couvrant US1 et US2. Choix signalés par l'IA :
+- trois écrans (création, connexion, tâches), **tous cachés par défaut** dans le HTML : c'est `auth.js` qui décide lequel afficher, et `app.js` ne charge les tâches qu'une fois la connexion validée ;
+- mot de passe haché en SHA-256 avec un sel de 16 octets aléatoires (`crypto.getRandomValues`, et non `Math.random`, qui est prévisible) ; à la connexion, on recalcule l'empreinte et on compare les empreintes, jamais les mots de passe ;
+- jauge : champ vide → rien, 0 à 2 critères → faible (rouge), 3 → moyen (orange), 4 → fort (vert) ; les 4 critères sont listés avec ✓ ou ✗ ; les majuscules accentuées (É, À) comptent comme majuscules ;
+- **ajout d'un champ « Confirmer le mot de passe »**, non demandé : sans récupération possible du mot de passe, une faute de frappe à la création bloquerait l'accès au compte ;
+- à la déconnexion, les tâches sont retirées de la page (elles restent enregistrées) ;
+- si le compte enregistré a été abîmé à la main (F12), l'application revient à l'écran de création, qui efface les anciennes tâches ;
+- si le navigateur ne propose pas Web Crypto, la création du compte est refusée plutôt que de stocker un mot de passe en clair.
+
+**Vérification :** 38 tests automatiques passés dans Chromium, dont : jauge correcte pour chaque niveau, bouton désactivé tant que le mot de passe n'est pas « fort », empreinte égale à SHA-256(sel + mot de passe), mot de passe absent de tout le stockage, ancienne tâche effacée à la création du compte, session en sessionStorage, même message pour un identifiant faux et un mot de passe faux, nouvel onglet → connexion demandée, identifiant contenant du HTML affiché en texte, aucune erreur JavaScript.
+
+**Gardé / modifié / rejeté :** à compléter après mon test dans le navigateur.
+

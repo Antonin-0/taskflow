@@ -1,7 +1,10 @@
 // =============================================================
-// TaskFlow · app.js · Sprint 1
+// TaskFlow · app.js · Sprints 1 et 2
 // Gestion des tâches : ajout, affichage, filtres, coche,
 // suppression et sauvegarde dans le navigateur (localStorage).
+//
+// Depuis le sprint 2, ce fichier n'affiche plus rien tout seul :
+// c'est auth.js qui appelle ouvrirTaches() une fois l'utilisateur connecté.
 //
 // Règle de sécurité appliquée partout (README, section 1.4) :
 // tout texte saisi par l'utilisateur est affiché avec textContent,
@@ -42,8 +45,9 @@ const boutonsFiltre = document.querySelectorAll(".filtre");
 
 // ----- État de l'application -----
 
-// Le tableau de toutes les tâches, relu depuis localStorage au démarrage
-let taches = chargerTaches();
+// Le tableau de toutes les tâches. Vide tant que personne n'est connecté :
+// il est rempli par ouvrirTaches(), appelée par auth.js après la connexion.
+let taches = [];
 
 // Le filtre choisi : "toutes", "a_faire" ou "terminee"
 let filtreActif = "toutes";
@@ -302,21 +306,50 @@ function afficherTaches() {
 // Filtres (US4)
 // =============================================================
 
+// Choisit un filtre et met en évidence le bouton correspondant
+function activerFiltre(nom) {
+  filtreActif = nom;
+  boutonsFiltre.forEach(function (bouton) {
+    const estActif = bouton.dataset.filtre === nom;
+    bouton.classList.toggle("actif", estActif);
+    bouton.setAttribute("aria-pressed", estActif ? "true" : "false");
+  });
+}
+
 boutonsFiltre.forEach(function (bouton) {
   bouton.addEventListener("click", function () {
-    filtreActif = bouton.dataset.filtre;
-
-    // Met en évidence le bouton choisi
-    boutonsFiltre.forEach(function (autre) {
-      const estActif = autre === bouton;
-      autre.classList.toggle("actif", estActif);
-      autre.setAttribute("aria-pressed", estActif ? "true" : "false");
-    });
-
+    activerFiltre(bouton.dataset.filtre);
     afficherTaches();
   });
 });
 
 
-// ----- Premier affichage au chargement de la page -----
-afficherTaches();
+// =============================================================
+// Fonctions appelées par auth.js (sprint 2)
+// =============================================================
+
+// Après la connexion : relit les tâches enregistrées et les affiche
+function ouvrirTaches() {
+  taches = chargerTaches();
+  activerFiltre("toutes");
+  afficherErreur("");
+  afficherTaches();
+  champTitre.focus();
+}
+
+// À la déconnexion : retire les tâches de la page et de la mémoire,
+// pour qu'elles ne restent pas affichées derrière l'écran de connexion.
+// Elles restent bien sûr enregistrées dans localStorage.
+function fermerTaches() {
+  taches = [];
+  liste.replaceChildren();
+  formulaire.reset();
+  afficherErreur("");
+}
+
+// À la création d'un compte : supprime définitivement les tâches existantes
+// (un nouveau compte ne doit pas voir celles d'un ancien compte)
+function effacerTaches() {
+  localStorage.removeItem(CLE_TACHES);
+  taches = [];
+}

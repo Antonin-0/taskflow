@@ -1,6 +1,12 @@
 /* =============================================================
-   TaskFlow · style.css · Sprint 1
+   TaskFlow · style.css · Sprints 1 et 2
    ============================================================= */
+
+/* Un élément avec l'attribut hidden reste toujours caché,
+   même si une autre règle lui donne un affichage (sécurité des écrans) */
+[hidden] {
+  display: none !important;
+}
 
 /* Couleurs utilisées dans toute l'application, regroupées ici
    pour pouvoir les changer à un seul endroit */
@@ -47,9 +53,147 @@ body {
 }
 
 h1 {
-  margin: 0 0 20px;
+  margin: 0;
   color: var(--accent);
   font-size: 2rem;
+}
+
+/* ----- En-tête (sprint 2) ----- */
+
+.entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.zone-utilisateur {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--texte-doux);
+  font-size: 0.9rem;
+}
+
+.connecte-en-tant-que strong {
+  color: var(--texte);
+  overflow-wrap: anywhere;
+}
+
+.bouton-secondaire {
+  padding: 8px 14px;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--texte);
+}
+
+.bouton-secondaire:hover {
+  background: var(--ligne);
+}
+
+/* ----- Écrans de création de compte et de connexion (sprint 2) ----- */
+
+.ecran-auth {
+  max-width: 400px;
+}
+
+.ecran-auth h2 {
+  margin: 0 0 6px;
+  font-size: 1.3rem;
+}
+
+.texte-aide {
+  margin: 0 0 16px;
+  color: var(--texte-doux);
+  font-size: 0.9rem;
+}
+
+.ecran-auth form {
+  display: flex;
+  flex-direction: column;
+}
+
+.ecran-auth label {
+  margin: 12px 0 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ecran-auth input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.ecran-auth .bouton-principal {
+  margin-top: 18px;
+}
+
+/* Bouton désactivé (« Créer mon compte » tant que la jauge n'est pas sur « fort ») */
+.bouton-principal:disabled {
+  background: #9fb8b4;
+  cursor: not-allowed;
+}
+
+/* ----- Jauge de robustesse ----- */
+
+.jauge {
+  height: 8px;
+  margin-top: 10px;
+  background: var(--ligne);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.jauge-barre {
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.2s, background-color 0.2s;
+}
+
+/* Rouge / orange / vert, comme les priorités */
+.jauge-barre.niveau-faible { width: 33%; background: var(--haute); }
+.jauge-barre.niveau-moyen { width: 66%; background: var(--moyenne); }
+.jauge-barre.niveau-fort { width: 100%; background: var(--basse); }
+
+.jauge-texte {
+  min-height: 1.3em;
+  margin: 6px 0 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Liste des critères : ✗ en gris s'il manque, ✓ en vert s'il est rempli */
+.liste-criteres {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.liste-criteres li {
+  margin: 3px 0;
+  color: var(--texte-doux);
+}
+
+.liste-criteres li::before {
+  content: "✗ ";
+  color: var(--haute);
+}
+
+.liste-criteres li.rempli {
+  color: var(--basse);
+}
+
+.liste-criteres li.rempli::before {
+  content: "✓ ";
+  color: var(--basse);
 }
 
 /* ----- Formulaire d'ajout ----- */

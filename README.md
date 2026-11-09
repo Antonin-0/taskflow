@@ -89,6 +89,7 @@ Format : *En tant que… je veux… afin de…*, avec des critères d'acceptatio
 - La jauge se met à jour à chaque caractère tapé (faible / moyen / fort, voir 1.3).
 - La liste des critères manquants est affichée sous le champ.
 - Le bouton « Créer mon compte » reste désactivé tant que la jauge n'est pas sur « fort ».
+- Le mot de passe est saisi deux fois (confirmation) : sans récupération possible, une faute de frappe bloquerait l'accès au compte.
 - Le mot de passe est enregistré sous forme de hash, jamais en clair.
 
 ### US3 · Créer une tâche (indispensable)

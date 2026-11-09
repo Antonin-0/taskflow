@@ -135,7 +135,7 @@ Valeurs autorisées précisées pour chaque champ (par exemple : titre de 1 à 1
 
 **Vérification :** 22 tests automatiques passés (ajout, titre vide refusé, titre de plus de 100 caractères refusé, date invalide refusée, titre contenant du HTML affiché en texte, coche, filtres, suppression annulée et confirmée, rechargement, localStorage abîmé).
 
-**Test dans un navigateur :** réalisé par Claude à ma demande, dans Chromium. Titre vide refusé avec le message « Le titre est obligatoire. » ; 4 tâches ajoutées avec les bonnes couleurs et dates ; tâche cochée barrée ; `<b>test</b>` affiché tel quel ; tâches toujours présentes après rechargement ; filtre « Terminées » correct ; suppression confirmée ; affichage correct sur un écran de téléphone ; aucune erreur JavaScript. Le rendu correspond à la maquette du support de cours (slide 5).
+**Test dans un navigateur (Chromium) :** titre vide refusé avec le message « Le titre est obligatoire. » ; 4 tâches ajoutées avec les bonnes couleurs et dates ; tâche cochée barrée ; `<b>test</b>` affiché tel quel ; tâches toujours présentes après rechargement ; filtre « Terminées » correct ; suppression confirmée ; affichage correct sur un écran de téléphone ; aucune erreur JavaScript. Le rendu correspond à la maquette du support de cours (slide 5).
 
 **Gardé :** l'ensemble du code, sans modification.
 
@@ -159,7 +159,11 @@ Valeurs autorisées précisées pour chaque champ (par exemple : titre de 1 à 1
 - si le compte enregistré a été abîmé à la main (F12), l'application revient à l'écran de création, qui efface les anciennes tâches ;
 - si le navigateur ne propose pas Web Crypto, la création du compte est refusée plutôt que de stocker un mot de passe en clair.
 
-**Vérification :** 38 tests automatiques passés dans Chromium, dont : jauge correcte pour chaque niveau, bouton désactivé tant que le mot de passe n'est pas « fort », empreinte égale à SHA-256(sel + mot de passe), mot de passe absent de tout le stockage, ancienne tâche effacée à la création du compte, session en sessionStorage, même message pour un identifiant faux et un mot de passe faux, nouvel onglet → connexion demandée, identifiant contenant du HTML affiché en texte, aucune erreur JavaScript.
+**Test dans un navigateur (Chromium) :** 38 tests automatiques passés, dont : jauge correcte pour chaque niveau, bouton désactivé tant que le mot de passe n'est pas « fort », empreinte égale à SHA-256(sel + mot de passe), mot de passe absent de tout le stockage, ancienne tâche effacée à la création du compte, session en sessionStorage, même message pour un identifiant faux et un mot de passe faux, nouvel onglet → connexion demandée, identifiant contenant du HTML affiché en texte, aucune erreur JavaScript.
 
-**Gardé / modifié / rejeté :** à compléter après mon test dans le navigateur.
+**Gardé :** l'ensemble du code, y compris le champ « Confirmer le mot de passe », ajouté aux critères de US2 dans le README.
+
+**Modifié / rejeté :** rien.
+
+**Pourquoi :** les exigences de sécurité de la section 1.4 du README prévues pour ce sprint sont toutes respectées et vérifiées. Le champ de confirmation n'était pas demandé, mais il répond à une limite déjà documentée (aucune récupération possible du mot de passe). Le fait que les trois écrans soient cachés par défaut est le choix le plus important : si le script plante, aucune tâche ne s'affiche.
 
